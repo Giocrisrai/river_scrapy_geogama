@@ -1,4 +1,4 @@
-import recaptcha_v3 as recaptcha
+import recaptcha.recaptcha_v3 as recaptcha
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.options import Options
@@ -15,7 +15,7 @@ import os
 def load_drive(website):
     options = webdriver.ChromeOptions()
     options.add_argument('--incognito')
-    options.add_argument('--headless')
+    #options.add_argument('--headless')
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
     options.binary_location = "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser" # Path to Brave Browser (this is the default)
@@ -96,48 +96,11 @@ def config_river(name_river, flow,driver):
     time.sleep(10)
 
 def solve_captcha(driver):
-    sitekey_clean = '6LdCfb8UAAAAAI-ubtp5e05A3i8A0h5fhnsrLvil'
     url = driver.current_url
-    api_key = '872dd297c08cdded7b13845b14b2c631'
 
-    solver = recaptchaV2Proxyless()
-    solver.set_verbose(1)
-    solver.set_key(api_key)
-    solver.set_website_url(url)
-    solver.set_website_key(sitekey_clean)
+    recaptcha.solve_captcha(url)
 
-    g_response = solver.solve_and_return_solution()
-    if g_response != 0:
-        print ("g-response: "+g_response)
-    else:
-        print ("task finished with error "+solver.error_code)
-
-    driver.execute_script('var element=document.getElementById("g-recaptcha-response"); element.style.display="";')
-
-    driver.execute_script("""document.getElementById("g-recaptcha-response").innerHTML = arguments[0]""", g_response)
-    driver.execute_script('var element=document.getElementById("g-recaptcha-response"); element.style.display="none";')
-
-    # find iframe
-    captcha_iframe = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located(
-            (
-                By.TAG_NAME, 'iframe'
-            )
-        )
-    )
-
-    ActionChains(driver).move_to_element(captcha_iframe).click().perform()
-
-    # click im not robot
-    captcha_box = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located(
-            (
-                By.ID, 'g-recaptcha-response'
-            )
-        )
-    )
-
-    driver.execute_script("arguments[0].click()", captcha_box)
+    #driver.execute_script("arguments[0].click()", captcha_box)
 
     time.sleep(10)
 
