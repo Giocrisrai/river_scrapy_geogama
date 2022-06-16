@@ -1,4 +1,4 @@
-import recaptcha.recaptcha_v3 as recaptcha
+import recaptcha.recaptcha_v2 as recaptcha
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.options import Options
@@ -98,9 +98,34 @@ def config_river(name_river, flow,driver):
 def solve_captcha(driver):
     url = driver.current_url
 
-    recaptcha.solve_captcha(url)
+    g_response = recaptcha.solve_captcha(url)
 
-    #driver.execute_script("arguments[0].click()", captcha_box)
+    driver.execute_script('var element=document.getElementById("g-recaptcha-response"); element.style.display="";')
+
+    driver.execute_script("""document.getElementById("g-recaptcha-response").innerHTML = arguments[0]""", g_response)
+    driver.execute_script('var element=document.getElementById("g-recaptcha-response"); element.style.display="none";')
+
+    # find iframe
+    captcha_iframe = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (
+                By.TAG_NAME, 'iframe'
+            )
+        )
+    )
+
+    ActionChains(driver).move_to_element(captcha_iframe).click().perform()
+    
+    # click im not robot
+    captcha_box = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located(
+            (
+                By.ID, 'g-recaptcha-response'
+            )
+        )
+    )
+
+    driver.execute_script("arguments[0].click()", captcha_box)
 
     time.sleep(10)
 
